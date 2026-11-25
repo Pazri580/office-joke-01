@@ -18,20 +18,26 @@ def output_dir():
 
 
 def validate(text):
-    """Return the first problem found, or None when the text is valid."""
+    """Collect every problem with the text; an empty list means it is valid."""
+    problems = []
     if not text.strip():
-        return "entry is empty or only whitespace"
+        problems.append("entry is empty or only whitespace")
     if len(text) > MAX_CHARS:
-        return f"entry is {len(text)} characters, over the {MAX_CHARS} limit"
-    if "\n" in text:
-        return "entry must be a single line"
-    return None
+        problems.append(
+            f"entry is {len(text)} characters, over the {MAX_CHARS} limit"
+        )
+    if "\n" in text or "\r" in text:
+        problems.append("entry must be a single line")
+    if text != text.strip():
+        problems.append("entry has leading or trailing whitespace")
+    return problems
 
 
 def main():
-    problem = validate(JOKE)
-    if problem is not None:
-        print(f"invalid entry: {problem}", file=sys.stderr)
+    problems = validate(JOKE)
+    if problems:
+        for problem in problems:
+            print(f"invalid entry: {problem}", file=sys.stderr)
         return 1
     out = output_dir()
     os.makedirs(out, exist_ok=True)
